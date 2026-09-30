@@ -15,31 +15,12 @@
             padding: 20px;
             text-align: center;
         }
-
-        h1 {
-            font-size: 32px;
-            font-weight: 900;
-            margin-bottom: 5px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .accent {
-            color: #ff5500;
-        }
-
-        p {
-            color: #888;
-            font-size: 15px;
-            margin-bottom: 30px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
+        h1 { font-size: 32px; font-weight: 900; margin-bottom: 5px; text-transform: uppercase; }
+        .accent { color: #ff5500; }
+        p { color: #888; font-size: 15px; margin-bottom: 30px; }
+        
+        /* Сетка категорий (Экран 1) */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .category-btn {
             background-color: #1e1e1e;
             border: 2px solid #2a2a2a;
@@ -49,75 +30,113 @@
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+            display: flex; flex-direction: column; align-items: center; gap: 12px;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.5); 
         }
+        .icon { font-size: 32px; color: #ffffff; transition: all 0.3s ease; }
+        .category-btn:hover { border-color: #ff5500; transform: translateY(-5px); box-shadow: 4px 9px 0px rgba(255, 85, 0, 0.2); }
+        .category-btn:hover .icon { color: #ff5500; transform: scale(1.15); }
+        .category-btn:active { background-color: #ff5500; border-color: #ff5500; box-shadow: 0px 0px 0px rgba(0,0,0,0); transform: translate(4px, 4px); }
 
-        .icon {
-            font-size: 32px;
-            color: #ffffff;
-            transition: all 0.3s ease; 
+        /* Экран создания встречи (Экран 2, скрыт по умолчанию) */
+        #event-screen { display: none; margin-top: 20px; }
+        .input-field {
+            width: 90%;
+            background-color: #1e1e1e;
+            border: 2px solid #2a2a2a;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            outline: none;
         }
-
-        .category-btn:hover {
-            border-color: #ff5500;
-            transform: translateY(-5px); 
-            box-shadow: 4px 9px 0px rgba(255, 85, 0, 0.2); 
-        }
-
-            .category-btn:hover .icon {
-                color: #ff5500; 
-                transform: scale(1.15); 
-            }
-
-        .category-btn:active {
+        .input-field:focus { border-color: #ff5500; }
+        
+        .main-btn {
             background-color: #ff5500;
-            border-color: #ff5500;
-            box-shadow: 0px 0px 0px rgba(0,0,0,0);
-            transform: translate(4px, 4px);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 900;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+            margin-bottom: 15px;
+            transition: all 0.2s;
         }
-
-            .category-btn:active .icon {
-                color: #ffffff;
-            }
+        .main-btn:active { transform: translate(4px, 4px); box-shadow: none; }
+        
+        .back-btn { background-color: transparent; border: 2px solid #555; color: #888; }
+        .back-btn:active { background-color: #555; color: white; }
     </style>
 </head>
 <body>
 
     <h1>MINSK<span class="accent">GO</span></h1>
-    <p>Выбери, чем займемся сегодня</p>
+    
+    <!-- ЭКРАН 1: Выбор категории -->
+    <div id="main-screen">
+        <p>Выбери, чем займемся сегодня</p>
+        <div class="grid">
+            <button class="category-btn" onclick="openEventScreen('Бильярд')"><i class="fa-solid fa-circle-dot icon"></i> Бильярд</button>
+            <button class="category-btn" onclick="openEventScreen('Бар')"><i class="fa-solid fa-beer-mug-empty icon"></i> Бар</button>
+            <button class="category-btn" onclick="openEventScreen('Кино')"><i class="fa-solid fa-film icon"></i> Кино</button>
+            <button class="category-btn" onclick="openEventScreen('Спорт')"><i class="fa-solid fa-futbol icon"></i> Спорт</button>
+            <button class="category-btn" onclick="openEventScreen('Игры')"><i class="fa-solid fa-gamepad icon"></i> Игры</button>
+            <button class="category-btn" onclick="openEventScreen('Авто')"><i class="fa-solid fa-car icon"></i> Авто</button>
+        </div>
+    </div>
 
-    <div class="grid">
-        <button class="category-btn" onclick="selectCategory('Бильярд')">
-            <i class="fa-solid fa-circle-dot icon"></i> Бильярд
-        </button>
-        <button class="category-btn" onclick="selectCategory('Бар')">
-            <i class="fa-solid fa-beer-mug-empty icon"></i> Бар
-        </button>
-        <button class="category-btn" onclick="selectCategory('Кино')">
-            <i class="fa-solid fa-film icon"></i> Кино
-        </button>
-        <button class="category-btn" onclick="selectCategory('Спорт')">
-            <i class="fa-solid fa-futbol icon"></i> Спорт
-        </button>
-        <button class="category-btn" onclick="selectCategory('Игры')">
-            <i class="fa-solid fa-gamepad icon"></i> Игры
-        </button>
-        <button class="category-btn" onclick="selectCategory('Авто')">
-            <i class="fa-solid fa-car icon"></i> Авто
-        </button>
+    <!-- ЭКРАН 2: Детали встречи -->
+    <div id="event-screen">
+        <p>Настраиваем: <strong id="selected-category" class="accent"></strong></p>
+        
+        <input type="text" id="event-details" class="input-field" placeholder="Где и во сколько? (например: Галерея в 19:00)">
+        
+        <button class="main-btn" onclick="sendToBot()">Позвать всех! 🚀</button>
+        <button class="main-btn back-btn" onclick="goBack()">Вернуться назад</button>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand();
+        tg.expand(); 
+        
+        let currentCategory = "";
 
-        function selectCategory(categoryName) {
-        tg.sendData(categoryName);
+        // Функция переключения на второй экран
+        function openEventScreen(category) {
+            currentCategory = category;
+            document.getElementById('main-screen').style.display = 'none';
+            document.getElementById('event-screen').style.display = 'block';
+            document.getElementById('selected-category').innerText = category;
+        }
+
+        // Функция возврата на первый экран
+        function goBack() {
+            document.getElementById('main-screen').style.display = 'block';
+            document.getElementById('event-screen').style.display = 'none';
+            document.getElementById('event-details').value = ''; // Очищаем поле
+        }
+
+        // Отправка итоговых данных боту (и закрытие аппки)
+        function sendToBot() {
+            let details = document.getElementById('event-details').value;
+            if (details.trim() === "") {
+                tg.showAlert("Напиши место и время!");
+                return;
+            }
+            
+            // Упаковываем категорию и описание в один JSON-объект
+            let data = JSON.stringify({
+                category: currentCategory,
+                details: details
+            });
+            
+            tg.sendData(data); // Отправляем боту и закрываем
         }
     </script>
 </body>
