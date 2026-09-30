@@ -12,45 +12,69 @@
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             text-align: center;
         }
-        h1 { font-size: 32px; font-weight: 900; margin-bottom: 5px; text-transform: uppercase; }
+        h1 { font-size: 28px; font-weight: 900; margin-bottom: 5px; text-transform: uppercase; }
         .accent { color: #ff5500; }
-        p { color: #888; font-size: 15px; margin-bottom: 30px; }
         
-        /* Сетка категорий (Экран 1) */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        /* Переключение вкладок */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn {
+            flex: 1;
+            background-color: #1e1e1e;
+            border: 2px solid #2a2a2a;
+            color: #888;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .tab-btn.active { background-color: #ff5500; border-color: #ff5500; color: white; }
+
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* Лента объявлений */
+        .event-card {
+            background-color: #1e1e1e;
+            border: 2px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            text-align: left;
+        }
+        .event-card h3 { margin: 0 0 8px 0; color: #ff5500; font-size: 18px; }
+        .event-card p { margin: 4px 0; color: #ccc; font-size: 14px; }
+        
+        /* Сетка категорий (Экран создания) */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .category-btn {
             background-color: #1e1e1e;
             border: 2px solid #2a2a2a;
             border-radius: 12px;
-            padding: 20px 10px;
+            padding: 15px 10px;
             color: white;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex; flex-direction: column; align-items: center; gap: 12px;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.5); 
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
         }
-        .icon { font-size: 32px; color: #ffffff; transition: all 0.3s ease; }
-        .category-btn:hover { border-color: #ff5500; transform: translateY(-5px); box-shadow: 4px 9px 0px rgba(255, 85, 0, 0.2); }
-        .category-btn:hover .icon { color: #ff5500; transform: scale(1.15); }
-        .category-btn:active { background-color: #ff5500; border-color: #ff5500; box-shadow: 0px 0px 0px rgba(0,0,0,0); transform: translate(4px, 4px); }
+        .category-btn.selected { border-color: #ff5500; background-color: rgba(255, 85, 0, 0.1); }
+        .icon { font-size: 26px; }
 
-        /* Экран создания встречи (Экран 2, скрыт по умолчанию) */
-        #event-screen { display: none; margin-top: 20px; }
         .input-field {
-            width: 90%;
+            width: 100%;
             background-color: #1e1e1e;
             border: 2px solid #2a2a2a;
             color: white;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
-            font-size: 16px;
-            margin-bottom: 20px;
+            font-size: 15px;
+            margin-bottom: 15px;
             outline: none;
+            box-sizing: border-box;
         }
         .input-field:focus { border-color: #ff5500; }
         
@@ -58,86 +82,138 @@
             background-color: #ff5500;
             border: none;
             color: white;
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 14px;
+            font-size: 16px;
             font-weight: 900;
             border-radius: 8px;
             cursor: pointer;
             width: 100%;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
-            margin-bottom: 15px;
-            transition: all 0.2s;
         }
-        .main-btn:active { transform: translate(4px, 4px); box-shadow: none; }
-        
-        .back-btn { background-color: transparent; border: 2px solid #555; color: #888; }
-        .back-btn:active { background-color: #555; color: white; }
     </style>
 </head>
 <body>
 
     <h1>MINSK<span class="accent">GO</span></h1>
-    
-    <!-- ЭКРАН 1: Выбор категории -->
-    <div id="main-screen">
-        <p>Выбери, чем займемся сегодня</p>
-        <div class="grid">
-            <button class="category-btn" onclick="openEventScreen('Бильярд')"><i class="fa-solid fa-circle-dot icon"></i> Бильярд</button>
-            <button class="category-btn" onclick="openEventScreen('Бар')"><i class="fa-solid fa-beer-mug-empty icon"></i> Бар</button>
-            <button class="category-btn" onclick="openEventScreen('Кино')"><i class="fa-solid fa-film icon"></i> Кино</button>
-            <button class="category-btn" onclick="openEventScreen('Спорт')"><i class="fa-solid fa-futbol icon"></i> Спорт</button>
-            <button class="category-btn" onclick="openEventScreen('Игры')"><i class="fa-solid fa-gamepad icon"></i> Игры</button>
-            <button class="category-btn" onclick="openEventScreen('Авто')"><i class="fa-solid fa-car icon"></i> Авто</button>
+
+    <!-- Вкладки -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('feed')">🔥 Лента</button>
+        <button class="tab-btn" onclick="switchTab('create')">➕ Создать</button>
+    </div>
+
+    <!-- ЭКРАН 1: Лента объявлений -->
+    <div id="feed-screen" class="screen active">
+        <div id="events-container">
+            <p style="color: #666;">Загрузка объявлений...</p>
         </div>
     </div>
 
-    <!-- ЭКРАН 2: Детали встречи -->
-    <div id="event-screen">
-        <p>Настраиваем: <strong id="selected-category" class="accent"></strong></p>
+    <!-- ЭКРАН 2: Создание встречи -->
+    <div id="create-screen" class="screen">
+        <p style="color: #888; font-size: 14px; margin-bottom: 15px;">Выбери категорию:</p>
+        <div class="grid" id="categories-grid">
+            <button class="category-btn" onclick="selectCategory(this, 'Бильярд')"><i class="fa-solid fa-circle-dot icon"></i> Бильярд</button>
+            <button class="category-btn" onclick="selectCategory(this, 'Бар')"><i class="fa-solid fa-beer-mug-empty icon"></i> Бар</button>
+            <button class="category-btn" onclick="selectCategory(this, 'Кино')"><i class="fa-solid fa-film icon"></i> Кино</button>
+            <button class="category-btn" onclick="selectCategory(this, 'Спорт')"><i class="fa-solid fa-futbol icon"></i> Спорт</button>
+        </div>
+
+        <div style="margin-top: 15px; text-align: left;">
+            <p style="color: #888; font-size: 14px; margin-bottom: 5px;">Где и во сколько?</p>
+            <input type="text" id="event-details" class="input-field" placeholder="Например: Галерея в 19:00">
+        </div>
         
-        <input type="text" id="event-details" class="input-field" placeholder="Где и во сколько? (например: Галерея в 19:00)">
-        
-        <button class="main-btn" onclick="sendToBot()">Позвать всех! 🚀</button>
-        <button class="main-btn back-btn" onclick="goBack()">Вернуться назад</button>
+        <button class="main-btn" onclick="createEvent()">Опубликовать встречу 🚀</button>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand(); 
-        
-        let currentCategory = "";
 
-        // Функция переключения на второй экран
-        function openEventScreen(category) {
-            currentCategory = category;
-            document.getElementById('main-screen').style.display = 'none';
-            document.getElementById('event-screen').style.display = 'block';
-            document.getElementById('selected-category').innerText = category;
+        let selectedCategory = "";
+        const API_URL = "http://127.0.0.1:8000"; // Позже заменим на облачный адрес
+
+        // Переключение между вкладками
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+            if (tab === 'feed') {
+                event.target.classList.add('active');
+                document.getElementById('feed-screen').classList.add('active');
+                loadEvents();
+            } else {
+                event.target.classList.add('active');
+                document.getElementById('create-screen').classList.add('active');
+            }
         }
 
-        // Функция возврата на первый экран
-        function goBack() {
-            document.getElementById('main-screen').style.display = 'block';
-            document.getElementById('event-screen').style.display = 'none';
-            document.getElementById('event-details').value = ''; // Очищаем поле
+        function selectCategory(btn, cat) {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedCategory = cat;
         }
 
-        // Отправка итоговых данных боту (и закрытие аппки)
-        function sendToBot() {
+        // Загрузка ленты с бэкенда
+        async function loadEvents() {
+            let container = document.getElementById('events-container');
+            container.innerHTML = '<p style="color: #666;">Загрузка...</p>';
+            try {
+                let response = await fetch(`${API_URL}/api/events`);
+                let events = await response.json();
+                
+                if (events.length === 0) {
+                    container.innerHTML = '<p style="color: #666;">Пока нет активных встреч. Создай первую!</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                events.forEach(ev => {
+                    container.innerHTML += `
+                        <div class="event-card">
+                            <h3>🎯 ${ev.category}</h3>
+                            <p>📍 <b>Где/Когда:</b> ${ev.details}</p>
+                            <p>👤 <b>Автор:</b> ${ev.creator_name}</p>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                container.innerHTML = '<p style="color: #ff5500;">Ошибка соединения с сервером.</p>';
+            }
+        }
+
+        // Отправка нового объявления на сервер
+        async function createEvent() {
             let details = document.getElementById('event-details').value;
-            if (details.trim() === "") {
-                tg.showAlert("Напиши место и время!");
+            if (!selectedCategory || !details) {
+                tg.showAlert("Выбери категорию и укажи детали!");
                 return;
             }
-            
-            // Упаковываем категорию и описание в один JSON-объект
-            let data = JSON.stringify({
-                category: currentCategory,
-                details: details
+
+            let user = tg.initDataUnsafe?.user || { id: 12345, first_name: "Владислав" };
+
+            let response = await fetch(`${API_URL}/api/create-event`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    creator_id: user.id,
+                    creator_name: user.first_name,
+                    category: selectedCategory,
+                    details: details
+                })
             });
-            
-            tg.sendData(data); // Отправляем боту и закрываем
+
+            if (response.ok) {
+                tg.showAlert("Встреча успешно создана!");
+                document.getElementById('event-details').value = '';
+                switchTab('feed'); // Перекидываем на вкладку ленты
+            } else {
+                tg.showAlert("Ошибка при создании.");
+            }
         }
+
+        // Загружаем ленту при открытии
+        loadEvents();
     </script>
 </body>
 </html>
