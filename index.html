@@ -186,7 +186,7 @@
             }
         }
 
-        // Отправка нового объявления на сервер
+       // Отправка нового объявления на сервер
         async function createEvent() {
             let details = document.getElementById('event-details').value;
             if (!selectedCategory || !details) {
@@ -196,27 +196,31 @@
 
             let user = tg.initDataUnsafe?.user || { id: 12345, first_name: "Владислав" };
 
-            let response = await fetch(`${API_URL}/api/create-event`, {
-                method: 'POST',
-                headers: { 
-                    // Убрали 'Content-Type': 'application/json', чтобы обмануть CORS-проверку ngrok
-                    'ngrok-skip-browser-warning': '69420' 
-                },
-                body: JSON.stringify({
-                    creator_id: user.id,
-                    creator_name: user.first_name,
-                    category: selectedCategory,
-                    details: details
-                })
-            });
+            try {
+                // Делаем максимально "простой" запрос без заголовков, 
+                // чтобы браузер не делал проверок безопасности (CORS)
+                let response = await fetch(`${API_URL}/api/create-event`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        creator_id: user.id,
+                        creator_name: user.first_name,
+                        category: selectedCategory,
+                        details: details
+                    })
+                });
 
-            if (response.ok) {
-                tg.showAlert("Встреча успешно создана!");
-                document.getElementById('event-details').value = '';
-                switchTab('feed'); // Переключаем на вкладку ленты
-                loadEvents();      // Автоматически подгружаем новую встречу!
-            } else {
-                tg.showAlert("Ошибка при создании.");
+                if (response.ok) {
+                    tg.showAlert("Встреча успешно создана! 🚀");
+                    document.getElementById('event-details').value = '';
+                    switchTab('feed'); // Идем в ленту
+                    loadEvents();      // Обновляем ленту
+                } else {
+                    // Если ответил сервер, но с ошибкой
+                    tg.showAlert("Отказал сервер. Код: " + response.status);
+                }
+            } catch (err) {
+                // Если ngrok или Telegram вообще оборвали связь
+                tg.showAlert("Ошибка сети: " + err.message);
             }
         }
         // Загружаем ленту при открытии
