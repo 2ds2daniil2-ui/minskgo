@@ -154,12 +154,16 @@
             selectedCategory = cat;
         }
 
-        // Загрузка ленты с бэкенда
+       // Загрузка ленты с бэкенда
         async function loadEvents() {
             let container = document.getElementById('events-container');
             container.innerHTML = '<p style="color: #666;">Загрузка...</p>';
             try {
-                let response = await fetch(`${API_URL}/api/events`);
+                let response = await fetch(`${API_URL}/api/events`, {
+                    headers: {
+                        "ngrok-skip-browser-warning": "69420" // Обходим защиту ngrok
+                    }
+                });
                 let events = await response.json();
                 
                 if (events.length === 0) {
@@ -194,7 +198,10 @@
 
             let response = await fetch(`${API_URL}/api/create-event`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': '69420' // Обходим защиту ngrok
+                },
                 body: JSON.stringify({
                     creator_id: user.id,
                     creator_name: user.first_name,
@@ -206,7 +213,7 @@
             if (response.ok) {
                 tg.showAlert("Встреча успешно создана!");
                 document.getElementById('event-details').value = '';
-                switchTab('feed'); // Перекидываем на вкладку ленты
+                switchTab('feed');
             } else {
                 tg.showAlert("Ошибка при создании.");
             }
