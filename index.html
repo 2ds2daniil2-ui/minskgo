@@ -121,6 +121,8 @@
         <div style="margin-top: 15px; text-align: left;">
             <p style="color: #888; font-size: 14px; margin-bottom: 5px;">Где и во сколько?</p>
             <input type="text" id="event-details" class="input-field" placeholder="Например: Галерея в 19:00">
+            <p style="text-align: left; margin: 15px 0 5px 10px; color: #aaa; font-size: 14px;">Сколько человек ищем?</p>
+            <input type="number" id="event-capacity" class="input-field" min="1" max="50" value="2">
         </div>
         
         <button class="main-btn" onclick="submitNewEvent()">Опубликовать встречу 🚀</button>
@@ -154,48 +156,88 @@
             selectedCategory = cat;
         }
 
-       // Загрузка ленты с бэкенда
-        async function loadEvents() {
-            let container = document.getElementById('events-container');
-            container.innerHTML = '<p style="color: #666;">Загрузка...</p>';
+      async function loadEvents() {
             try {
-                let response = await fetch(`${API_URL}/api/events`, {
-                    headers: {
-                        "ngrok-skip-browser-warning": "69420" // Обходим защиту ngrok
-                    }
-                });
+                let response = await fetch(`${API_URL}/api/events`);
                 let events = await response.json();
                 
+                let container = document.getElementById('events-container');
+                container.innerHTML = '';
+                
                 if (events.length === 0) {
-                    container.innerHTML = '<p style="color: #666;">Пока нет активных встреч. Создай первую!</p>';
+                    container.innerHTML = '<p style="color: #777;">Пока нет активных встреч. Создай первую!</p>';
                     return;
                 }
 
-                container.innerHTML = '';
                 events.forEach(ev => {
+                    // Считаем сколько людей уже откликнулось
+                    let currentCount = ev.participants ? ev.participants.length : 0;
+                    let maxCount = ev.max_participants || 2; 
+                    let slotsLeft = maxCount - currentCount;
+                    
+                    // Решаем, какую кнопку показать (активную или серую)
+                    let buttonHtml = '';
+                    if (slotsLeft > 0) {
+                        buttonHtml = `<button onclick="respondToEvent('${ev.id}')" style="margin-top: 10px; width: 100%; padding: 10px; background: #ff5500; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Откликнуться</button>`;
+                    } else {
+                        buttonHtml = `<button disabled style="margin-top: 10px; width: 100%; padding: 10px; background: #555; color: #aaa; border: none; border-radius: 8px; font-weight: bold;">Мест нет</button>`;
+                    }
+
                     container.innerHTML += `
-                        <div class="event-card">
-                            <h3>🎯 ${ev.category}</h3>
-                            <p>📍 <b>Где/Когда:</b> ${ev.details}</p>
-                            <p>👤 <b>Автор:</b> ${ev.creator_name}</p>
+                        <div class="event-card" style="background: #222; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: left;">
+                            <h3 style="margin-top: 0; color: #fff;">🎯 ${ev.category}</h3>
+                            <p style="color: #ccc;">📍 <b>Где/Когда:</b> ${ev.details}</p>
+                            <p style="color: #ccc;">👤 <b>Автор:</b> ${ev.creator_name}</p>
+                            <p style="color: #ffaa00;">👥 <b>Осталось мест:</b> ${slotsLeft} из ${maxCount}</p>
+                            ${buttonHtml}
                         </div>
                     `;
                 });
-            } catch (e) {
-                container.innerHTML = '<p style="color: #ff5500;">Ошибка соединения с сервером.</p>';
+            } catch (err) {
+                console.error("Ошибка загрузки ленты:", err);
             }
         }
 
-       async function submitNewEvent() {
+        // Новая функция для обработки отклика
+        async function respondToEvent(eventId) {
+            let user = tg.initDataUnsafe?.user || { id: 12345, first_name: "Владислав" };
+
+            try {
+                let response = await fetch(`${API_URL}/api/respond`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        event_id: eventId,
+                        user_id: user.id,
+                        user_name: user.first_name
+                    })
+                });
+
+                if (response.ok) {
+                    alert("Ты успешно откликнулся на встречу! 🎉");
+                    loadEvents(); // Сразу обновляем ленту, чтобы счетчик мест уменьшился
+                } else {
+                    let errData = await response.json();
+                    alert("Ошибка: " + (errData.detail || response.status));
+                }
+            } catch (err) {
+                alert("Ошибка сети: " + err.message);
+            }
+        }
+
+      async function submitNewEvent() {
             let detailsInput = document.getElementById('event-details');
             let details = detailsInput.value;
             
-            if (!typeof selectedCategory !== 'undefined' && !selectedCategory || !details) {
+            // Захватываем число из нового поля, которое ты только что добавил
+            let capacityInput = document.getElementById('event-capacity');
+            let capacity = parseInt(capacityInput.value) || 2; 
+            
+            if (typeof selectedCategory === 'undefined' || !selectedCategory || !details) {
                 alert("Выбери категорию и укажи детали!");
                 return;
             }
 
-            // Используем твоё имя для теста, если запускаем вне Телеграма
             let user = tg.initDataUnsafe?.user || { id: 12345, first_name: "Владислав" };
 
             try {
@@ -207,16 +249,18 @@
                     body: JSON.stringify({
                         creator_id: user.id,
                         creator_name: user.first_name,
-                        category: typeof selectedCategory !== 'undefined' ? selectedCategory : "Разное",
-                        details: details
+                        category: selectedCategory,
+                        details: details,
+                        max_participants: capacity // <-- Отправляем количество мест на сервер!
                     })
                 });
 
                 if (response.ok) {
                     alert("Встреча успешно создана! 🚀");
                     detailsInput.value = '';
+                    if(capacityInput) capacityInput.value = '2'; // Сбрасываем счетчик обратно
                     switchTab('feed');
-                    loadEvents(); // Сразу обновляем ленту
+                    loadEvents(); 
                 } else {
                     alert("Ошибка сервера: " + response.status);
                 }
