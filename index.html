@@ -123,7 +123,7 @@
             <input type="text" id="event-details" class="input-field" placeholder="Например: Галерея в 19:00">
         </div>
         
-        <button class="main-btn" onclick="createEvent()">Опубликовать встречу 🚀</button>
+        <button class="main-btn" onclick="submitNewEvent()">Опубликовать встречу 🚀</button>
     </div>
 
     <script>
@@ -186,7 +186,7 @@
             }
         }
 
-       async function createEvent() {
+       async function submitNewEvent() {
             try {
                 // Шаг 1: Проверяем, срабатывает ли вообще кнопка
                 tg.showAlert("Шаг 1: Кнопка нажата!");
