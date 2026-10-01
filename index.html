@@ -186,41 +186,54 @@
             }
         }
 
-       // Отправка нового объявления на сервер
-        async function createEvent() {
-            let details = document.getElementById('event-details').value;
-            if (!selectedCategory || !details) {
-                tg.showAlert("Выбери категорию и укажи детали!");
-                return;
-            }
-
-            let user = tg.initDataUnsafe?.user || { id: 12345, first_name: "Владислав" };
-
+       async function createEvent() {
             try {
-                // Делаем максимально "простой" запрос без заголовков, 
-                // чтобы браузер не делал проверок безопасности (CORS)
+                // Шаг 1: Проверяем, срабатывает ли вообще кнопка
+                tg.showAlert("Шаг 1: Кнопка нажата!");
+
+                let detailsInput = document.getElementById('event-details');
+                if (!detailsInput) {
+                    tg.showAlert("Ошибка: не найдено поле ввода текста (event-details)!");
+                    return;
+                }
+                
+                let details = detailsInput.value;
+                if (!details) {
+                    tg.showAlert("Напиши подробности встречи!");
+                    return;
+                }
+                
+                // Перестраховка: если ты забыл объявить selectedCategory, код не упадет
+                let categoryToUse = typeof selectedCategory !== 'undefined' ? selectedCategory : "Разное";
+
+                let user = tg.initDataUnsafe?.user || { id: 12345, first_name: "Владислав" };
+                
+                tg.showAlert("Шаг 2: Данные собраны, отправляем POST-запрос...");
+
                 let response = await fetch(`${API_URL}/api/create-event`, {
                     method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
                         creator_id: user.id,
                         creator_name: user.first_name,
-                        category: selectedCategory,
+                        category: categoryToUse,
                         details: details
                     })
                 });
 
                 if (response.ok) {
-                    tg.showAlert("Встреча успешно создана! 🚀");
-                    document.getElementById('event-details').value = '';
-                    switchTab('feed'); // Идем в ленту
-                    loadEvents();      // Обновляем ленту
+                    tg.showAlert("Шаг 3: УРА! Сервер принял данные 🚀");
+                    detailsInput.value = '';
+                    switchTab('feed');
+                    loadEvents();
                 } else {
-                    // Если ответил сервер, но с ошибкой
-                    tg.showAlert("Отказал сервер. Код: " + response.status);
+                    tg.showAlert("Шаг 3: Сервер ответил ошибкой " + response.status);
                 }
             } catch (err) {
-                // Если ngrok или Telegram вообще оборвали связь
-                tg.showAlert("Ошибка сети: " + err.message);
+                // Выведет точную причину блокировки браузером (например, CORS)
+                tg.showAlert("Шаг 3: Ошибка отправки (браузер заблокировал): " + err.message);
             }
         }
         // Загружаем ленту при открытии
